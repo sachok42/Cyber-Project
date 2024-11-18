@@ -1,2 +1,0 @@
-print("byeworld")
-print("byeee")
