@@ -2,11 +2,19 @@ from CProtocol import *
 
 class CClientBL:
 
-    def __init__(self, host: str, port: int):
+    def __init__(self, host: str, port: int, flag: int = norm_flag):
 
         self._client_socket = None
         self._host = host
         self._port = port
+        self.flag = flag
+
+    def make_artist(self):
+        self.flag = art_flag
+
+    def undo_artist(self):
+        self.flag = norm_flag
+
 
     def connect(self) -> socket:
         try:

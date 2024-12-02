@@ -19,10 +19,12 @@ class CServerBL:
         self._port = port
         self._server_socket = None
         self._is_srv_running = True
-        self._client_handlers = []
+        self.accept_connections = True
+        self.client_handlers = []
 
         _protocol26 = CProtocol26()
         _protocol27 = CProtocol27()
+        _protocol = CProtocol()
 
     def delete_from_client_handlers(self, address):
         write_to_log(f"[CServer_BL] client_handlers list length: {len(self._client_handlers)}")
@@ -99,45 +101,10 @@ class CClientHandler(threading.Thread):
         # This code run in separate thread for every client
         connected = True
         while connected:
-            # 1. Get message from socket and check it
-            valid_msg, msg = receive_msg(self._client_socket)
-            if valid_msg:
-                # 2. Save to log
-                write_to_log(f"[SERVER_BL] received from {self._address}] - {msg}")
-                if len(msg) > 4:
-                    cmd, args = CProtocol27().parse_request(msg)
-                    write_to_log("[CServerBL] args:" + args)
-                else:
-                    cmd = msg
-                # 3. If valid command - create response
-                if check_cmd(cmd):
-                    if check_cmd(cmd) == 1:
-                        pr26 = CProtocol26()
-                        # 4. Create response
-                        response = pr26.create_response_msg(msg)
-                        # 5. Save to log
-                        write_to_log("[SERVER_BL] send from PR26- " + response)
-                    elif check_cmd(cmd) == 2:
-                        pr27 = CProtocol27()
-                        # 4. Create response
-                        response = pr27.create_response_msg(cmd, args)
-                        # 5. Save to log
-                        write_to_log("[SERVER_BL] send from PR27- " + response)
-                    # 6. Send response to the client
-                    self._client_socket.send(response.encode(FORMAT))
-                else:
-                    # if received command not supported by protocol, just send it back "as is"
-                    # 4. Create response
-                    response = "Non-supported cmd"
-                    response = f"{len(response):02d}{response}"
-                    # 5. Save to log
-                    write_to_log("[SERVER_BL] send - " + response)
-                    # 6. Send response to the client
-                    self._client_socket.send(response.encode(FORMAT))
+
 
                 # Handle DISCONNECT command
                 if msg == DISCONNECT_MSG:
-
                     connected = False
 
         # invoke CLOSE CONNECTION event
