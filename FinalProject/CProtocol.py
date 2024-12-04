@@ -1,30 +1,10 @@
-import ipaddress
-from datetime import datetime
-import socket
 import random
 import logging
-import random
+from config import *
+import sqlite3
 
 
-
-SERVER_HOST: str = "0.0.0.0"
-CLIENT_HOST: str = "127.0.0.1"
-PORT: int = 12345
-BUFFER_SIZE: int = 1024
-HEADER_LEN: int = 2
-FORMAT: str = 'utf-8'
-DISCONNECT_MSG: str = "EXIT"
-
-# flags
-norm_flag = 0
-art_flag = 1
-
-words_bank = "words.txt"
-
-
-# prepare Log file
-LOG_FILE = 'LOG.log'
-logging.basicConfig(filename=LOG_FILE, level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+logging.basicConfig(filename=LOG_FILE, level=logging.INFO, format=LOG_FORMAT)
 
 
 def write_to_log(msg):
@@ -32,55 +12,131 @@ def write_to_log(msg):
     print(msg)
 
 
-# choosing a random user to be drawing
-def choose_artist(client_handlers: []):
-    artist = random.choice(client_handlers)
-    artist.make_artist()
-    write_to_log(f"[PROTOCOL] Client's became  an artist{artist.client_socket}{artist.address} ")
+class Protocol:
+    """Handles message construction and parsing based on the protocol."""
+
+    def __init__(self):
+        self.commands = {
+            COMMAND_ROLE: self.handle_role,
+            COMMAND_WORD: self.handle_word,
+            COMMAND_GUESS: self.handle_guess,
+            COMMAND_EXIT: self.handle_exit,
+            COMMAND_WELCOME: self.handle_welcome
+        }
+
+    def create_message(self, command, data=""):
+        """Creates a protocol-compliant message."""
+        return f"{command}{MESSAGE_DELIMITER}{data}"
+
+    def parse_message(self, message):
+        """Parses a protocol message into a (command, data) tuple."""
+        try:
+            command, data = message.split(MESSAGE_DELIMITER, 1)
+        except ValueError:
+            command, data = message, ""
+        return command, data
+
+    def handle_role(self, data):
+        print(f"Your role is: {data}")
+
+    def handle_word(self, data):
+        print(f"Your word to draw: {data}")
+
+    def handle_guess(self, data):
+        print(f"Guess received: {data}")
+
+    def handle_exit(self, data):
+        print("Client exited.")
+
+    def handle_welcome(self, data):
+        print(data)
+
+    @staticmethod
+    def create_tables():
+        """Initializes the database tables."""
+        conn = sqlite3.connect(DB_FILE)
+        cursor = conn.cursor()
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS users (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                username TEXT UNIQUE NOT NULL,
+                score INTEGER DEFAULT 0
+            )
+        ''')
+        conn.commit()
+        conn.close()
+
+    @staticmethod
+    def add_user(username):
+        """Adds a new user with an initial score."""
+        conn = sqlite3.connect(DB_FILE)
+        cursor = conn.cursor()
+        try:
+            cursor.execute('INSERT INTO users (username) VALUES (?)', (username,))
+            conn.commit()
+        except sqlite3.IntegrityError:
+            pass  # User already exists
+        finally:
+            conn.close()
+
+    @staticmethod
+    def get_score(username):
+        """Retrieves the user's current score."""
+        conn = sqlite3.connect(DB_FILE)
+        cursor = conn.cursor()
+        cursor.execute('SELECT score FROM users WHERE username = ?', (username,))
+        result = cursor.fetchone()
+        conn.close()
+        return result[0] if result else 0
+
+    @staticmethod
+    def update_score(username, score):
+        """Updates the user's score."""
+        conn = sqlite3.connect(DB_FILE)
+        cursor = conn.cursor()
+        cursor.execute('UPDATE users SET score = ? WHERE username = ?', (score, username))
+        conn.commit()
+        conn.close()
+
+    @staticmethod
+    def handle_correct_guess(player_name, artist_name):
+        """Handles the logic when a player guesses correctly."""
+        guesser_score = Protocol.get_score(player_name) + POINTS_FOR_CORRECT_GUESS
+        artist_score = Protocol.get_score(artist_name) + POINTS_FOR_ARTIST_SUCCESS
+
+        Protocol.update_score(player_name, guesser_score)
+        Protocol.update_score(artist_name, artist_score)
+
+        return {
+            "guesser": {"name": player_name, "score": guesser_score},
+            "artist": {"name": artist_name, "score": artist_score}
+        }
 
 
-def undo_allusers(client_handlers: []):
-    for c in client_handlers:
-        c.undo_artist()
-    write_to_log(f"[PROTOCOL] all clients' flags are  set to default")
+class RoleManager:
+    """Manages player roles in the game."""
 
-# word generator
-def get_random_word(file_path):
-    # Open the file and read the words.txt into a list
-    with open(file_path, "r") as file:
-        words = file.read().splitlines()
+    def __init__(self, clients, roles=DEFAULT_ROLES):
+        self.clients = clients
+        self.roles = {}
+        self.available_roles = roles
 
-    # Return a random word from the list
-    return random.choice(words)
+    def assign_roles(self):
+        """Assigns roles to clients."""
+        self.roles = {client: 'guesser' for client in self.clients}
+        artist = random.choice(list(self.clients))
+        self.roles[artist] = 'artist'
+        return self.roles, artist
 
+    def get_role(self, client):
+        """Returns the role of a given client."""
+        return self.roles.get(client, 'guesser')
 
-
-# sending:
-# screen translation
-def send_big_image(self, my_socket: socket, file_name: str, chunk_size=1024) -> str:
-    txt = ''
-    try:
-        # open file in binary reading mode
-        with open(file_name, "rb") as file:
-            while True:
-                # read by chunk sized bytes
-                image_data = file.read(chunk_size)
-                # when everything is read
-                if not image_data:
-                    break  # Reached th end of the file
-
-                my_socket.send(image_data)
-
-            txt = f'Send photo {file_name} - done'
-    except FileNotFoundError:
-        txt = f'Send photo {file_name} - Photo file doesnt exist'
-
-    return txt
-
-#receiving:
-#parse if screen or text
-
-
+    def broadcast_roles(self):
+        """Sends role information to all clients."""
+        for client in self.clients:
+            role_message = f"{COMMAND_ROLE}{MESSAGE_DELIMITER}{self.roles[client]}"
+            client.send(role_message.encode('FORMAT'))
 
 
 
