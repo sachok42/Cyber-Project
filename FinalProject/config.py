@@ -1,3 +1,15 @@
+# =========== LOGGING ===========
+import logging
+
+LOG_FILE = 'LOG.log'
+LOG_FORMAT = '%(asctime)s - %(levelname)s - %(message)s'
+logging.basicConfig(filename=LOG_FILE, level=logging.INFO, format=LOG_FORMAT)
+
+
+def write_to_log(msg):
+    logging.info(msg)
+    print(msg)
+
 # =========== FERNET ===========
 
 from cryptography.fernet import Fernet
@@ -9,13 +21,13 @@ MESSAGE_DELIMITER = ":"  # Delimiter for separating command and data
 
 # =========== NETWORK ===========
 
-SERVER_HOST: str = "0.0.0.0"
-CLIENT_HOST: str = "127.0.0.1"
+SERVER_HOST: str = "127.0.0.1"
 PORT: int = 12345
 BUFFER_SIZE: int = 1024
 HEADER_LEN: int = 2
 FORMAT: str = 'utf-8'
 DISCONNECT_MSG: str = "EXIT"
+MAX_CONNECTIONS: int = 5  # maximal number of players
 
 # =========== COMMANDS ===========
 COMMAND_ROLE = "ROLE"  # Command for assigning roles
@@ -24,9 +36,6 @@ COMMAND_GUESS = "GUESS"  # Command for submitting a guess
 COMMAND_EXIT = "EXIT"  # Command for exiting the game
 COMMAND_WELCOME = "WELCOME"  # Command for welcoming new players
 
-# =========== LOGGING ===========
-LOG_FILE = 'LOG.log'
-LOG_FORMAT = '%(asctime)s - %(levelname)s - %(message)s'
 
 # =========== WORDS ===========
 words_bank = "words.txt"

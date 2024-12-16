@@ -4,14 +4,6 @@ from config import *
 import sqlite3
 
 
-logging.basicConfig(filename=LOG_FILE, level=logging.INFO, format=LOG_FORMAT)
-
-
-def write_to_log(msg):
-    logging.info(msg)
-    print(msg)
-
-
 class Protocol:
     """Handles message construction and parsing based on the protocol."""
 

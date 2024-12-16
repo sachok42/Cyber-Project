@@ -380,7 +380,7 @@ def askShapeDimention():
         "ECTS - Paint App", f"Enter Height for {shapeSelect.get()}"
     )
     if width and height:
-        print(width, height)
+        Protocol.Protocol.write_to_log(width, height)
 '''
 
 

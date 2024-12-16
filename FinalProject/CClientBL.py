@@ -14,7 +14,7 @@ class Client:
 
     def start(self):
         """Starts the client to handle sending and receiving messages."""
-        print(f"Connected to the server at {SERVER_HOST}:{PORT}.")
+        write_to_log(f"[Client] {self.client_socket}Connected to the server at {SERVER_HOST}:{PORT}.")
         threading.Thread(target=self.receive_messages, daemon=True).start()
 
         while self.running:
@@ -28,26 +28,27 @@ class Client:
     def send_message(self, command, data=""):
         """Sends a protocol-compliant message to the server."""
         message = self.protocol.create_message(command, data)
-        self.client_socket.send(message.encode('FORMAT'))
+        self.client_socket.send(message.encode(FORMAT))
 
     def receive_messages(self):
         """Continuously receives messages from the server and processes them."""
         while self.running:
             try:
-                message = self.client_socket.recv(BUFFER_SIZE).decode('FORMAT')
+                message = self.client_socket.recv(BUFFER_SIZE).decode(FORMAT)
                 command, data = self.protocol.parse_message(message)
                 self.process_message(command, data)
             except ConnectionError:
-                print("Disconnected from the server.")
+                write_to_log(f'[Client] {self.client_socket} Disconnected from the server.')
                 self.running = False
                 break
 
     def process_message(self, command, data):
         """Processes received messages based on their command."""
-        if command in self.protocol.commands:
-            self.protocol.commands[command](data)
-        else:
-            print(f"Unknown command received: {command}")
+        if command != "":
+            if command in self.protocol.commands:
+                self.protocol.commands[command](data)
+            else:
+                write_to_log(f"Unknown command received: {command}")
 
 if __name__ == "__main__":
     client = Client()
