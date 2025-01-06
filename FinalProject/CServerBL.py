@@ -1,51 +1,142 @@
+import json
 import socket
 import threading
+from CProtocol import *
+
+
+# events
+NEW_CONNECTION: int = 1
+CLOSE_CONNECTION: int = 2
+NEW_REGISTRATION: int = 3
+
 import random
-from CProtocol import Protocol, RoleManager
-import CProtocol
-from config import *
 
-
-class Server:
-    def __init__(self, host=SERVER_HOST, port=PORT):
+class CServerBL:
+    def __init__(self, host, port):
         self._host = host
         self._port = port
-        self.protocol = Protocol()
-        self.clients = {}
-        self.round_active = True
-        self.role_manager = None
+        self._server_socket = None
+        self._is_srv_running = True
+        self._accepting_connections = True  # Flag to control connection acceptance
+        self._client_handlers = []
+        self._register_clients = []
+        self._stop_message = "STOP_CONNECTIONS"  # Special message to stop accepting connections
 
-    def start(self):
-        self.server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.server.bind((self._host, self._port))
-        self.server.listen(MAX_CONNECTIONS)
-        write_to_log(f"[Server] - started on {SERVER_HOST}:{PORT}. Waiting for connections...")
-        while True:
-            client_socket, client_address = self.server.accept()
-            write_to_log(f"[Server] - Connection from {client_address}")
-            self.clients[client_socket] = 'guesser'
-            self.send_message(client_socket, self.protocol.create_message("WELCOME", "Welcome to Charades!"))
-            threading.Thread(target=self.handle_client, args=(client_socket,), daemon=True).start()
+    def stop_accepting_connections(self):
+        """Stop the server from accepting new connections."""
+        self._accepting_connections = False
+        write_to_log("[CServerBL] Server stopped accepting new connections.")
 
-    def handle_client(self, client_socket):
-        while True:
-            try:
-                message = client_socket.recv(BUFFER_SIZE).decode('FORMAT')
-                command, data = self.protocol.parse_message(message)
-                self.process_message(client_socket, command, data)
-            except:
-                self.disconnect_client(client_socket)
-                break
+    def select_random_client(self):
+        """Select a random connected client."""
+        if not self._client_handlers:
+            write_to_log("[CServerBL] No clients to select from.")
+            return None
+        selected_client = random.choice(self._client_handlers)
+        write_to_log(f"[CServerBL] Selected random client: {selected_client._address}")
+        return selected_client
 
-    def process_message(self, client_socket, command, data):
-        current_word = random.choice(words_bank)
-        if command == "GUESS" and self.round_active:
-            if data.strip() == self.current_word:
-                self.broadcast(f"🎉 {self.clients[client_socket]} guessed the word: {data.strip()}!")
-                self.round_active = False
-                self.reset_round()
+    def start_server(self):
+        try:
+            self._server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            self._server_socket.bind((self._host, self._port))
+            self._server_socket.listen(5)
+            write_to_log(f"[SERVER_BL] Server is listening on {self._host}:{self._port}")
+            self._is_srv_running = True
+            self._accepting_connections= True
+
+            while self._is_srv_running:
+
+                while self._accepting_connections:
+                    client_socket, address = self._server_socket.accept()
+                    write_to_log(f"[SERVER_BL] Client connected: {address}")
+                    cl_handler = CClientHandler(client_socket, address, self.handle_message)
+                    cl_handler.start()
+                    self._client_handlers.append(cl_handler)
+                    write_to_log(f"[SERVER_BL] Active connections: {len(self._client_handlers)}")
+
+                    if parse_message(self._client_socket) == COMMAND_PLAY:
+                        self._accepting_connections = False
+                        write_to_log(f"[SERVER_BL] The game is starting")
+
+                # if drawing == none, assign random roles
+                # while true accept guesses, if right drawing=guessed, break
 
 
-if __name__ == "__main__":
-    server = Server()
-    server.start()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                if not self._accepting_connections:
+                    write_to_log("[SERVER_BL] Stopped accepting connections.")
+                    break
+
+                client_socket, address = self._server_socket.accept()
+                write_to_log(f"[SERVER_BL] Client connected: {address}")
+                cl_handler = CClientHandler(client_socket, address, self.handle_message)
+                cl_handler.start()
+                self._client_handlers.append(cl_handler)
+                write_to_log(f"[SERVER_BL] Active connections: {len(self._client_handlers)}")
+
+        except Exception as e:
+            write_to_log(f"[SERVER_BL] Exception in start_server: {e}")
+
+        finally:
+            write_to_log("[SERVER_BL] Server thread terminated.")
+
+
+
+
+
+
+    def handle_message(self, message, client_handler):
+        """Handle incoming messages from clients."""
+        if message == self._stop_message:
+            write_to_log("[SERVER_BL] Received stop message.")
+            self.stop_accepting_connections()
+
+
+class CClientHandler(threading.Thread):
+    def __init__(self, client_socket, address, message_handler):
+        super().__init__()
+        self._client_socket = client_socket
+        self._address = address
+        self.message_handler = message_handler
+        self.connected = True
+
+    def send_message(self, message):
+        self._client_socket.send(message.encode(FORMAT))
+
+    def run(self):
+        while self.connected:
+            valid_msg, message = receive_msg(self._client_socket)
+            if valid_msg:
+                write_to_log(f"[CLIENT_HANDLER] Message from {self._address}: {message}")
+                self.message_handler(message, self)
+
+            # Handle DISCONNECT
+            if message == DISCONNECT_MSG:
+                self.connected = False
+                write_to_log(f"[CLIENT_HANDLER] Client {self._address} disconnected.")
+                self._client_socket.close()

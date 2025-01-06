@@ -4,18 +4,22 @@ from config import *
 import sqlite3
 
 
+def create_message(command, data=""):
+    """Creates a protocol-compliant message."""
+    return f"{command}{MESSAGE_DELIMITER}{data}"
+
+
+def parse_message(message: str):
+    """Parses a protocol message into a (command, data) tuple."""
+    try:
+        command, data =  message.split(MESSAGE_DELIMITER, 1)
+    except ValueError:
+        command, data = message, ""
+    return command, data
+
+
 class Protocol:
     """Handles message construction and parsing based on the protocol."""
-
-    def __init__(self):
-        self.commands = {
-            COMMAND_ROLE: self.handle_role,
-            COMMAND_WORD: self.handle_word,
-            COMMAND_GUESS: self.handle_guess,
-            COMMAND_EXIT: self.handle_exit,
-            COMMAND_WELCOME: self.handle_welcome
-        }
-
     def create_message(self, command, data=""):
         """Creates a protocol-compliant message."""
         return f"{command}{MESSAGE_DELIMITER}{data}"
@@ -28,20 +32,6 @@ class Protocol:
             command, data = message, ""
         return command, data
 
-    def handle_role(self, data):
-        print(f"Your role is: {data}")
-
-    def handle_word(self, data):
-        print(f"Your word to draw: {data}")
-
-    def handle_guess(self, data):
-        print(f"Guess received: {data}")
-
-    def handle_exit(self, data):
-        print("Client exited.")
-
-    def handle_welcome(self, data):
-        print(data)
 
     @staticmethod
     def create_tables():
@@ -131,5 +121,20 @@ class RoleManager:
             client.send(role_message.encode('FORMAT'))
 
 
+'''
+ def handle_role(self, data):
+        print(f"Your role is: {data}")
 
+    def handle_word(self, data):
+        print(f"Your word to draw: {data}")
+
+    def handle_guess(self, data):
+        print(f"Guess received: {data}")
+
+    def handle_exit(self, data):
+        print("Client exited.")
+
+    def handle_welcome(self, data):
+        print(data)
+'''
 

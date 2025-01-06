@@ -35,6 +35,7 @@ COMMAND_WORD = "WORD"  # Command for sending the drawing word
 COMMAND_GUESS = "GUESS"  # Command for submitting a guess
 COMMAND_EXIT = "EXIT"  # Command for exiting the game
 COMMAND_WELCOME = "WELCOME"  # Command for welcoming new players
+COMMAND_PLAY = "PLAY"  # Command for stopping accepting connections and starting a new game
 
 
 # =========== WORDS ===========
