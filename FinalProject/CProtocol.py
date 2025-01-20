@@ -1,21 +1,58 @@
 import random
 import logging
+import socket
+
 from config import *
 import sqlite3
 
 
 def create_message(command, data=""):
     """Creates a protocol-compliant message."""
-    return f"{command}{MESSAGE_DELIMITER}{data}"
+    temp = f"{command}{MESSAGE_DELIMITER}{data}"
+    msg = f"{len(temp):HEADER}{temp}"
+    write_to_log(f"[Protocol] - message created {msg} ")
+    return msg
 
 
 def parse_message(message: str):
     """Parses a protocol message into a (command, data) tuple."""
     try:
-        command, data =  message.split(MESSAGE_DELIMITER, 1)
+        command, data = message.split(MESSAGE_DELIMITER, 1)
     except ValueError:
         command, data = message, ""
     return command, data
+
+
+# copied from 10.9 project on 20.1.25
+def check_cmd(data) -> int:
+    data = data.upper()
+    if data == DISCONNECT_MSG:
+        return 1
+    else:
+        return 0
+
+
+def receive_msg(my_socket: socket):
+    # receive msg from client or server
+    """Extract message from protocol, without the length field
+       If length field does not include a number, returns False, "Error" """
+    str_header = my_socket.recv(HEADER).decode()
+    write_to_log(f"[Protocol - GET_MSG] str_header - {str_header}")
+    if str_header == '':
+        return False, ''
+    length = int(str_header)
+    write_to_log(f"[Protocol - GET_MSG] length - {length}")
+    if length > 0:
+        buf = my_socket.recv(length).decode()
+    else:
+        return False, ''
+
+    return True, buf
+
+
+
+
+
 
 
 class Protocol:
@@ -94,7 +131,8 @@ class Protocol:
             "artist": {"name": artist_name, "score": artist_score}
         }
 
-
+# all the functional moved to serverbl
+'''
 class RoleManager:
     """Manages player roles in the game."""
 
@@ -120,7 +158,7 @@ class RoleManager:
             role_message = f"{COMMAND_ROLE}{MESSAGE_DELIMITER}{self.roles[client]}"
             client.send(role_message.encode('FORMAT'))
 
-
+'''
 '''
  def handle_role(self, data):
         print(f"Your role is: {data}")

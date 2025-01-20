@@ -19,12 +19,16 @@ FERNET_KEY = Fernet.generate_key()  # You can save this key and reload it later
 DEFAULT_ROLES = ["artist", "guesser"]  # Default roles in the game
 MESSAGE_DELIMITER = ":"  # Delimiter for separating command and data
 
+#mine
+DEFROLE = "guesser"
+ARTROLE = "artist"
+
 # =========== NETWORK ===========
 
 SERVER_HOST: str = "127.0.0.1"
 PORT: int = 12345
 BUFFER_SIZE: int = 1024
-HEADER_LEN: int = 2
+HEADER: str = "04d"
 FORMAT: str = 'utf-8'
 DISCONNECT_MSG: str = "EXIT"
 MAX_CONNECTIONS: int = 5  # maximal number of players

@@ -1,6 +1,7 @@
 import json
 import socket
 import threading
+import random
 from CProtocol import *
 
 
@@ -9,7 +10,6 @@ NEW_CONNECTION: int = 1
 CLOSE_CONNECTION: int = 2
 NEW_REGISTRATION: int = 3
 
-import random
 
 class CServerBL:
     def __init__(self, host, port):
@@ -18,7 +18,7 @@ class CServerBL:
         self._server_socket = None
         self._is_srv_running = True
         self._accepting_connections = True  # Flag to control connection acceptance
-        self._client_handlers = []
+        self._client_handlers = {}  # dictionary of connected clients and their roles
         self._register_clients = []
         self._stop_message = "STOP_CONNECTIONS"  # Special message to stop accepting connections
 
@@ -32,9 +32,33 @@ class CServerBL:
         if not self._client_handlers:
             write_to_log("[CServerBL] No clients to select from.")
             return None
-        selected_client = random.choice(self._client_handlers)
-        write_to_log(f"[CServerBL] Selected random client: {selected_client._address}")
+
+        selected_client = random.choice(self._client_handlers.keys())
+        write_to_log(f"[CServerBL] Selected random client: {selected_client}. They're drawing now")
         return selected_client
+
+    def send_roles(self, chosen_client):
+        for client in self._client_handlers:
+            msg = create_message(COMMAND_ROLE, self._client_handlers[client])
+            write_to_log(f"[CServerBL] {client}'s role is {self._client_handlers[client]}")
+            client.send(msg.encode())
+
+
+
+    def assign_roles(self, guessed: socket = None):
+        if not self._client_handlers:
+            write_to_log("[CServerBL] No clients to select from.")
+        # setting everyone's roles to default
+        for key in self._client_handlers:
+            self._client_handlers[key] = DEFROLE
+        # if noone has guessed (first play)
+        if guessed is None:
+            chosen_client = random.choice(self._client_handlers.keys())
+            write_to_log(f"[CServerBL] Chosen random client: {chosen_client}. They're drawing now")
+        else:
+            self._client_handlers[guessed] = ARTROLE
+
+
 
     def start_server(self):
         try:
@@ -43,7 +67,7 @@ class CServerBL:
             self._server_socket.listen(5)
             write_to_log(f"[SERVER_BL] Server is listening on {self._host}:{self._port}")
             self._is_srv_running = True
-            self._accepting_connections= True
+            self._accepting_connections = True
 
             while self._is_srv_running:
 
@@ -52,15 +76,18 @@ class CServerBL:
                     write_to_log(f"[SERVER_BL] Client connected: {address}")
                     cl_handler = CClientHandler(client_socket, address, self.handle_message)
                     cl_handler.start()
-                    self._client_handlers.append(cl_handler)
+                    self._client_handlers[cl_handler] = DEFROLE  # add new connection + assign default role
                     write_to_log(f"[SERVER_BL] Active connections: {len(self._client_handlers)}")
 
                     if parse_message(self._client_socket) == COMMAND_PLAY:
                         self._accepting_connections = False
                         write_to_log(f"[SERVER_BL] The game is starting")
+                # here starts the game
+                while True:
+                    assign_roles()
 
-                # if drawing == none, assign random roles
-                # while true accept guesses, if right drawing=guessed, break
+
+
 
 
 
