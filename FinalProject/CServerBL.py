@@ -32,18 +32,16 @@ class CServerBL:
         if not self._client_handlers:
             write_to_log("[CServerBL] No clients to select from.")
             return None
-
         selected_client = random.choice(self._client_handlers.keys())
         write_to_log(f"[CServerBL] Selected random client: {selected_client}. They're drawing now")
         return selected_client
 
     def send_roles(self, chosen_client):
         for client in self._client_handlers:
+            # create role setting message
             msg = create_message(COMMAND_ROLE, self._client_handlers[client])
-            write_to_log(f"[CServerBL] {client}'s role is {self._client_handlers[client]}")
             client.send(msg.encode())
-
-
+            write_to_log(f"[CServerBL] sent role {self._client_handlers[client]} to {client} ")
 
     def assign_roles(self, guessed: socket = None):
         if not self._client_handlers:
@@ -51,14 +49,15 @@ class CServerBL:
         # setting everyone's roles to default
         for key in self._client_handlers:
             self._client_handlers[key] = DEFROLE
+        # assigning the drawing role
         # if noone has guessed (first play)
         if guessed is None:
             chosen_client = random.choice(self._client_handlers.keys())
-            write_to_log(f"[CServerBL] Chosen random client: {chosen_client}. They're drawing now")
+            write_to_log(f"[CServerBL] Chosen random client: {chosen_client}")
         else:
             self._client_handlers[guessed] = ARTROLE
-
-
+        # send roles
+        self.send_roles(guessed)
 
     def start_server(self):
         try:
@@ -81,10 +80,23 @@ class CServerBL:
 
                     if parse_message(self._client_socket) == COMMAND_PLAY:
                         self._accepting_connections = False
-                        write_to_log(f"[SERVER_BL] The game is starting")
+                        write_to_log(f"[SERVER_BL] The game is starting, the server doesn't receive connections anymore")
                 # here starts the game
                 while True:
+                    # assign roles
                     assign_roles()
+                    # chose a random word and send it
+                    current_word = get_random_word()
+                    # accept guesses while not guessed (while true)
+                    while True:
+                        # treat guesses
+
+                        # if right
+                        # stop accessing guesses
+                    # notificate everybody
+                    # update "guessed"
+                    # update scores
+                    # break
 
 
 

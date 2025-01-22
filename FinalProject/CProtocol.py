@@ -50,6 +50,14 @@ def receive_msg(my_socket: socket):
     return True, buf
 
 
+# word generator
+def get_random_word():
+    # Open the file and read the words.txt into a list
+    with open(words_bank, "r") as file:
+        words = file.read().splitlines()
+
+    # Return a random word from the list
+    return random.choice(words)
 
 
 
