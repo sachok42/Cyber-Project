@@ -1,4 +1,6 @@
 import socket
+from config import *
+from protocol import *
 
 
 class TelnetClient:
