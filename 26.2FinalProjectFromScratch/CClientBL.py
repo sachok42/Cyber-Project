@@ -6,7 +6,7 @@ from config import *
 from protocol import *
 
 
-class TelnetClient:
+class CClientBL:
     def __init__(self, host, port):
         self.host = host
         self.port = port
@@ -72,7 +72,7 @@ if __name__ == "__main__":
     # connect to the server
     host = input("Enter server IP: ")
     port = int(input("Enter server port: "))
-    client = TelnetClient(host, port)
+    client = CClientBL(host, port)
     client.connect()
 
     # start sending and receiving threads

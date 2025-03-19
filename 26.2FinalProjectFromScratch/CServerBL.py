@@ -8,7 +8,7 @@ from protocol import *
 
 # VARIABLES
 users = ('a', 'b')  # List of allowed users
-connected = {}  # Dictionary to store connected clients
+connected = {}  # {login: (Client_connection, role)}
 
 
 # Message object to encapsulate action and data
@@ -71,7 +71,7 @@ def validate(connection, address, file, login):
     if login not in users:
         return False, 'Permission denied'  # Reject if login not in users
     if login in connected:
-        return False, f'Already logged in from {connected[login].address}'  # Reject if user already connected
+        return False, f'Already logged in from {connected[login][0].address}'  # Reject if user already connected
     return True, ClientConnection(connection, address, file, login)  # Accept login
 
 
@@ -79,14 +79,14 @@ def validate(connection, address, file, login):
 def broadcast(client, word):
     word = client.login + ': ' + word
     for c in connected.values():
-        if not (c is client or c.login == 'root'):
-            c.qout.put(Message(TEXT_ACTION, word))  # Add message to client's outgoing queue
+        if not (c[0] is client or c[0].login == 'root'):
+            c[0].qout.put(Message(TEXT_ACTION, word))  # Add message to client's outgoing queue
     return
 
 
 # Main server function
 def server(super_queue):
-    connected['root'] = ClientConnection(None, None, None, 'root')  # Root user placeholder
+    connected['root'] = (ClientConnection(None, None, None, 'root'), None)  # Root user placeholder
     write_to_log(f'[server] - is running')
     while True:
         msg = super_queue.get()  # Get message from queue
