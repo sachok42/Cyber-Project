@@ -53,26 +53,26 @@ class Ui_MainWindow(object):
         self.gridLayout = QtWidgets.QGridLayout()
 
         # IP Address label and input field
-        self.IPLabel = QtWidgets.QLabel("IP Address:", self.verticalLayoutWidget_2)
+        self.IPLabel = QtWidgets.QLabel(" IP Address:", self.verticalLayoutWidget_2)
         self.IPField = QtWidgets.QLineEdit(self.verticalLayoutWidget_2)
         self.gridLayout.addWidget(self.IPLabel, 1, 0)
         self.gridLayout.addWidget(self.IPField, 1, 1)
 
         # Port label and input field
-        self.PortLabel = QtWidgets.QLabel("Port:", self.verticalLayoutWidget_2)
+        self.PortLabel = QtWidgets.QLabel(" Port:", self.verticalLayoutWidget_2)
         self.PortField = QtWidgets.QLineEdit(self.verticalLayoutWidget_2)
         self.gridLayout.addWidget(self.PortLabel, 2, 0)
         self.gridLayout.addWidget(self.PortField, 2, 1)
 
         # Connect button
-        self.ConnectBtn = QtWidgets.QPushButton("Connect", self.verticalLayoutWidget_2)
+        self.ConnectBtn = QtWidgets.QPushButton("  Connect  ", self.verticalLayoutWidget_2)
         self.gridLayout.addWidget(self.ConnectBtn, 1, 2, 2, 1)
 
         # Add grid layout to vertical layout
         self.verticalLayout_2.addLayout(self.gridLayout)
 
         # --- MESSAGE SENDING & RECEIVING SECTION ---
-        self.ReceiveLabel = QtWidgets.QLabel("Receive:", self.verticalLayoutWidget_2)
+        self.ReceiveLabel = QtWidgets.QLabel(" Receive:", self.verticalLayoutWidget_2)
         self.ReceiveField = QtWidgets.QPlainTextEdit(self.verticalLayoutWidget_2)
 
         # Add Receive section to layout
@@ -80,9 +80,9 @@ class Ui_MainWindow(object):
         self.verticalLayout_2.addWidget(self.ReceiveField)
 
         # Create "Send" messages section
-        self.Sendlabel = QtWidgets.QLabel("Send:", self.verticalLayoutWidget_2)
+        self.Sendlabel = QtWidgets.QLabel(" Send:", self.verticalLayoutWidget_2)
         self.SendField = QtWidgets.QLineEdit(self.verticalLayoutWidget_2)
-        self.SendBtn = QtWidgets.QPushButton("Send", self.verticalLayoutWidget_2)
+        self.SendBtn = QtWidgets.QPushButton("  Send  ", self.verticalLayoutWidget_2)
 
         # Horizontal layout for send message field and button
         self.horizontalLayout_3 = QtWidgets.QHBoxLayout()
@@ -102,11 +102,11 @@ class Ui_MainWindow(object):
         self.verticalLayout.setContentsMargins(0, 0, 0, 0)
 
         # Create buttons
-        self.LoginBtn = QtWidgets.QPushButton("Login", self.verticalLayoutWidget)
-        self.PlayBtn = QtWidgets.QPushButton("Play", self.verticalLayoutWidget)
-        self.DrawBtn = QtWidgets.QPushButton("Draw", self.verticalLayoutWidget)
-        self.WatchBtn = QtWidgets.QPushButton("Watch", self.verticalLayoutWidget)
-        self.LeaveBtn = QtWidgets.QPushButton("Leave", self.verticalLayoutWidget)
+        self.LoginBtn = QtWidgets.QPushButton(" Login ", self.verticalLayoutWidget)
+        self.PlayBtn = QtWidgets.QPushButton(" Play ", self.verticalLayoutWidget)
+        self.DrawBtn = QtWidgets.QPushButton(" Draw ", self.verticalLayoutWidget)
+        self.WatchBtn = QtWidgets.QPushButton(" Watch ", self.verticalLayoutWidget)
+        self.LeaveBtn = QtWidgets.QPushButton(" Leave ", self.verticalLayoutWidget)
 
         # Add buttons to layout
         self.verticalLayout.addWidget(self.LoginBtn)
