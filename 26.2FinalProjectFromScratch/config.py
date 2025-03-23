@@ -1,7 +1,7 @@
 # =========== NETWORK ===========
 
 SERVER_HOST: str = "127.0.0.1"
-PORT: int = 1114
+PORT: int = 1111
 BUFFER_SIZE: int = 1024
 HEADER: str = "04d"
 FORMAT: str = 'utf-8'
