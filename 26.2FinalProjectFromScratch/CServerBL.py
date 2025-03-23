@@ -77,10 +77,10 @@ def validate(connection, address, file, login):
 
 # Broadcasts message to all connected clients (except sender and root)
 def broadcast(client, word):
-    word = client.login + ': ' + word
-    for c in connected.values():
-        if not (c[0] is client or c[0].login == 'root'):
-            c[0].qout.put(Message(TEXT_ACTION, word))  # Add message to client's outgoing queue
+    msg = client.login + ': ' + word
+    for connection, role in connected.values():  # unpack the tuple
+        if not (connection is client or connection.login == 'root'):
+            connection.qout.put(Message(TEXT_ACTION, msg))  # Add message to client's outgoing queue
     return
 
 
@@ -99,13 +99,13 @@ def server(super_queue):
             allow, args = validate(*msg.data)  # Validate login
             if allow:
                 # Notify clients of connection
-                broadcast(connected['root'], f'{args.login} connected from {args.address}')
+                broadcast(connected['root'][0], f'{args.login} connected from {args.address}')
                 args.qsuper = super_queue
                 args.ci = Thread(target=clientin, args=(args,))  # Start input thread
                 args.co = Thread(target=clientout, args=(args,))  # Start output thread
                 args.ci.start()
                 args.co.start()
-                connected[args.login] = args  # Add client to connected list
+                connected[args.login] = (args, GUESS_ROLE)  # Add client to connected list
             else:
                 connection, address, file, _ = msg.data
                 file.write(args + '\n')  # Send error message to client

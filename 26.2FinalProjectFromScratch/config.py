@@ -17,11 +17,16 @@ CONNECTION_ACTION = "CONNECTION"
 AUTHENTICATION_ACTION = "AUTHENTICATION"
 TEXT_ACTION = "TEXT"  # REGULAR TEXT MESSAGE TO BE BROADCASTED
 LOGOUT_ACTION = "LOGOUT"
+
 # gameplay
 ROLE_ACTION = "ROLE"  # Command for assigning roles
 WORD_ACTON = "WORD"  # Command for sending the drawing word
 GUESS_ACTION = "GUESS"  # Command for submitting a guess
 PLAY_ACTION = "PLAY"  # Command for stopping accepting connections and starting a new game
+
+# roles
+DRAW_ROLE = True
+GUESS_ROLE = False
 
 
 # =========== UI ===========
