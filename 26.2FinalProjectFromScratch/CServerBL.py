@@ -84,6 +84,7 @@ class Server:
 
         while True:
             msg = self.super_queue.get()  # Get message from queue
+            write_to_log(f'[Server] - current message: {msg.data} ')
             if msg.action == CONNECTION_ACTION:
                 g = Thread(target=self.gateman, args=(*msg.data,))  # Start login thread
                 g.start()
@@ -95,8 +96,10 @@ class Server:
                     # Notify clients of connection
                     self.broadcast(self.connected['root'][0], f'{args.login} connected from {args.address}')
                     args.qsuper = self.super_queue
-                    args.ci = Thread(target=self.clientin, args=(args,))  # Start input thread
-                    args.co = Thread(target=self.clientout, args=(args,))  # Start output thread
+                    # Start input thread
+                    args.ci = Thread(target=self.clientin, args=(args,))
+                    # Start output thread
+                    args.co = Thread(target=self.clientout, args=(args,))
                     args.ci.start()
                     args.co.start()
                     self.connected[args.login] = (args, GUESS_ROLE)  # Add client to connected list
@@ -108,7 +111,7 @@ class Server:
                     connection.shutdown(socket.SHUT_WR)
                     connection.close()
             elif msg.action == LOGOUT_ACTION:
-                self.broadcast(self.connected['root'], f'{msg.data.login} left')  # Notify clients of logout
+                self.broadcast(self.connected['root'][0], f'{msg.data.login} left')  # Notify clients of logout
                 msg.data.qout.put(Message('exit'))  # Send exit message
                 msg.data.ci.join()
                 msg.data.co.join()

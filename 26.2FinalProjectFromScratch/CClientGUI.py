@@ -15,9 +15,11 @@ from protocol import *
 from config import *
 
 
-class Ui_MainWindow(object):
+class Ui_MainWindow(CClientBL, object):
     def __init__(self):
         super().__init__()
+
+        self._client_socket = None
 
         # fields
         self.IPField = None
@@ -181,30 +183,60 @@ class Ui_MainWindow(object):
         self.DrawBtn.setEnabled(False)
         self.WatchBtn.setEnabled(False)
         self.LeaveBtn.setEnabled(False)
-        self.SendBtn.setEnabled(False)
+        self.SendBtn.setEnabled(True)
 
         self.IPField.setReadOnly(False)
         self.PortField.setReadOnly(False)
         self.SendField.setReadOnly(False)
         self.ReceiveField.setReadOnly(True)
 
-    # EVENTS CHANGE OF STATES
-    # states if connected successfully
-    def connected_states(self):
-        # now you can't connect but can login or leave
-        self.ConnectBtn.setEnabled(False)
-        self.LoginBtn.setEnabled(True)
-        self.LeaveBtn.setEnabled(True)
+        # declare target functions of buttons
+        # Connect buttons to functions
+        self.ConnectBtn.clicked.connect(self.on_click_connect)
+        self.LoginBtn.clicked.connect(self.on_click_login)
+        self.PlayBtn.clicked.connect(self.on_click_play)
+        self.DrawBtn.clicked.connect(self.on_click_draw)
+        self.WatchBtn.clicked.connect(self.on_click_watch)
+        self.LeaveBtn.clicked.connect(self.on_click_leave)
+        self.SendBtn.clicked.connect(self.on_click_send)
 
-    def logged_states(self):
+    # target functions for the buttons
+    def on_click_connect(self):
+        ip = self.IPField.text()
+        port = int(self.PortField.text())
+
+        self._client_socket = self.connect(ip, port)  # Ensure your connect function takes arguments
+
+        if self._client_socket:
+            self.ReceiveField.appendPlainText("Connected successfully!")  # Update UI
+            self.ConnectBtn.setEnabled(False)
+            self.LoginBtn.setEnabled(True)
+            self.LeaveBtn.setEnabled(True)
+        else:
+            self.ReceiveField.appendPlainText("Failed to connect.")
+
+    def on_click_send(self):
+        text = self.SendField.text()
+        write_to_log(f'[ClientGUI] message to be sent: {text}')
+        self.send_message(text)
+
+    def on_click_login(self):
         # now you cant login but can play and send messages
         self.LoginBtn.setEnabled(False)
         self.PlayBtn.setEnabled(True)
-        self.SendBtn.setEnabled(True)
+        # self.SendBtn.setEnabled(True)
 
-    def playing_states(self):
-        # now you can't start a game but
-        self.PlayBtn.setEnabled(False)
+    def on_click_play(self):
+        pass
+
+    def on_click_draw(self):
+        pass
+
+    def on_click_watch(self):
+        pass
+
+    def on_click_leave(self):
+        pass
 
     def retranslateUi(self, MainWindow):
         """Handles the translation of UI elements."""
