@@ -46,6 +46,18 @@ LABELS = "rgb(125, 132, 88)"
 SHADOW_BUTTONS = "rgb(230, 150, 60)"  # Slightly darker shade for shadow effect
 DIS_SHADOW_BUTTONS = "rgb(220, 180, 120)"  # Softer shadow for disabled buttons
 
+# drawing window, palette https://coolors.co/c03935-e16a30-f5ad33-387b5c-3877aa-7c6d8e-d691ad-1e0c00-fff4e2
+RED = "rgb(192, 57, 53)"
+ORANGE = "rgb(225, 106, 48)"
+YELLOW = "rgb(245, 173, 51)"
+GREEN = "rgb(56, 123, 92)"
+BLUE = "rgb(56, 119, 170)"
+PURPLE = "rgb(124, 109, 142)"
+PINK = "rgb(214, 145, 173)"
+BLACK = "rgb(30, 12, 0)"
+WHITE = "rgb(255, 244, 226)"
+
+
 
 def set_designs(buttons: list, fields: list, labels: list):
     button_style = f"""
