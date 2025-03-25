@@ -57,7 +57,7 @@ PINK = "rgb(214, 145, 173)"
 BLACK = "rgb(30, 12, 0)"
 WHITE = "rgb(255, 244, 226)"
 
-
+PALETTE_COLORS = [RED, ORANGE, YELLOW, GREEN, BLUE, PURPLE, PINK, BLACK]
 
 def set_designs(buttons: list, fields: list, labels: list):
     button_style = f"""

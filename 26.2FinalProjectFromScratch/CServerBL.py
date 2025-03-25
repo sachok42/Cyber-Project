@@ -127,6 +127,7 @@ class Server:
             else:
                 print('Unknown action')  # Debug unknown actions
 
+
     # Start the server
     def start(self):
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)  # Create socket

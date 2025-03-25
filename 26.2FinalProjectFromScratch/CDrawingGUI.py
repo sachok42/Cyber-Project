@@ -1,14 +1,15 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
+from PyQt5.QtGui import QColor
+
 from protocol import *
 from config import *
-from CClientGUI import CClientGUI
 
 
-class CDrawingGUI(CClientGUI):
+class CDrawingGUI(QtWidgets.QWidget):
 
     def __init__(self):
         super().__init__()
-
+        self.setWindowTitle("Drawing")
         self.frameCanvas = None
 
         # palette
@@ -25,6 +26,7 @@ class CDrawingGUI(CClientGUI):
         self.EraserBtn = None
         self.ClearBtn = None
 
+        self.setupUi(self)
 
     def setupUi(self, Form):
         # Set up the main window properties
@@ -52,46 +54,13 @@ class CDrawingGUI(CClientGUI):
         self.gridLayout = QtWidgets.QGridLayout()
         self.gridLayout.setObjectName("gridLayout")
 
-        # Create color buttons (set text to empty and assign object names)
-        self.Yellowbtn = QtWidgets.QPushButton(self.widget)
-        self.Yellowbtn.setText("")  # No text, just a color button
-        self.Yellowbtn.setObjectName("Yellowbtn")  # Name the button
-        self.gridLayout.addWidget(self.Yellowbtn, 1, 0, 1, 1)  # Add button to grid layout
-
-        self.PinkBtn = QtWidgets.QPushButton(self.widget)
-        self.PinkBtn.setText("")  # No text
-        self.PinkBtn.setObjectName("PinkBtn")  # Name the button
-        self.gridLayout.addWidget(self.PinkBtn, 4, 0, 1, 1)
-
-        self.RedBtn = QtWidgets.QPushButton(self.widget)
-        self.RedBtn.setText("")  # No text
-        self.RedBtn.setObjectName("RedBtn")  # Name the button
-        self.gridLayout.addWidget(self.RedBtn, 0, 0, 1, 1)
-
-        self.BlackBtn = QtWidgets.QPushButton(self.widget)
-        self.BlackBtn.setText("")  # No text
-        self.BlackBtn.setObjectName("BlackBtn")  # Name the button
-        self.gridLayout.addWidget(self.BlackBtn, 4, 1, 1, 1)
-
-        self.BlueBtn = QtWidgets.QPushButton(self.widget)
-        self.BlueBtn.setText("")  # No text
-        self.BlueBtn.setObjectName("BlueBtn")  # Name the button
-        self.gridLayout.addWidget(self.BlueBtn, 3, 0, 1, 1)
-
-        self.OrangeBtn = QtWidgets.QPushButton(self.widget)
-        self.OrangeBtn.setText("")  # No text
-        self.OrangeBtn.setObjectName("OrangeBtn")  # Name the button
-        self.gridLayout.addWidget(self.OrangeBtn, 0, 1, 1, 1)
-
-        self.GreenBtn = QtWidgets.QPushButton(self.widget)
-        self.GreenBtn.setText("")  # No text
-        self.GreenBtn.setObjectName("GreenBtn")  # Name the button
-        self.gridLayout.addWidget(self.GreenBtn, 1, 1, 1, 1)
-
-        self.PurpleBtn = QtWidgets.QPushButton(self.widget)
-        self.PurpleBtn.setText("")  # No text
-        self.PurpleBtn.setObjectName("PurpleBtn")  # Name the button
-        self.gridLayout.addWidget(self.PurpleBtn, 3, 1, 1, 1)
+        # set color picking buttons
+        for i, color in enumerate(PALETTE_COLORS):
+            btn = QtWidgets.QPushButton()
+            btn.setStyleSheet(f"background-color: {color}; border: 1px solid black;")
+            btn.setFixedSize(30, 20)  # Square buttons
+            btn.clicked.connect(lambda checked, col=color: self.set_pen_color(QColor(col)))
+            self.gridLayout.addWidget(btn, i // 2, i % 2)  # Arrange in 4 columns
 
         # Add the grid layout to the vertical layout
         self.verticalLayout_2.addLayout(self.gridLayout)
@@ -119,9 +88,26 @@ class CDrawingGUI(CClientGUI):
         # Connect the slots by object names (auto connection for signals/slots)
         QtCore.QMetaObject.connectSlotsByName(Form)
 
+        # set style
+        buttons = [self.ClearBtn, self.EraserBtn]
+        fields = [self.frameCanvas]
+        labels = []
+        set_designs(buttons, fields, labels)
+        Form.setStyleSheet(f"background-color: {LIGHTBEIGE_BG};")
+
+
     def retranslateUi(self, Form):
         # Set window title and button text
         _translate = QtCore.QCoreApplication.translate
         Form.setWindowTitle(_translate("Form", "Form"))
         self.EraserBtn.setText(_translate("Form", "Eraser"))
-        self.pushButton_10.setText(_translate("Form", "Clear canvas"))
+        self.ClearBtn.setText(_translate("Form", "Clear canvas"))
+
+
+if __name__ == "__main__":
+    import sys
+
+    app = QtWidgets.QApplication(sys.argv)  # Create the application instance
+    window = CDrawingGUI()  # Create an instance of your window
+    window.show()  # Show the window
+    sys.exit(app.exec_())  # Start the application's event loop
